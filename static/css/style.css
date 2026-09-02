@@ -158,6 +158,27 @@ h1, .brand {
     z-index: 0;
 }
 
+.education-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    grid-template-areas:
+        "edu"
+        "details";
+    gap: 1.5rem 3rem;
+}
+
+.edu-header {
+    grid-area: edu;
+}
+
+.education-details {
+    grid-area: details;
+}
+
+.edu-points {
+    padding: 20px;
+}
+
 .avatar {
     position: relative;
     z-index: 1;
