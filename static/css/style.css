@@ -159,8 +159,6 @@ h1, .brand {
     z-index: 0;
 }
 
-/* Layout & Styling using your custom variables */
-
 section {
     padding: 4rem 0;
     border-bottom: 1px solid var(--line);
@@ -173,7 +171,6 @@ section h2 {
     margin-bottom: 1.5rem;
 }
 
-/* Education Section */
 .education-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -189,7 +186,7 @@ section h2 {
     background-color: var(--text-box);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 2rem; /* Generous internal padding */
+    padding: 2rem;
 }
 
 .education-grid h3 {
@@ -198,7 +195,6 @@ section h2 {
     color: var(--ink);
 }
 
-/* Skills Section */
 .MySkills > div {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -214,7 +210,7 @@ section h2 {
     background-color: var(--text-box);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 2rem; /* Generous internal padding */
+    padding: 2rem; 
 }
 
 .MySkills h3 {
@@ -223,7 +219,6 @@ section h2 {
     color: var(--ink);
 }
 
-/* Experiences Section */
 .experienceGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -239,7 +234,7 @@ section h2 {
     background-color: var(--text-box);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 2rem; /* Generous internal padding */
+    padding: 2rem; 
 }
 
 .experienceGrid h3 {
@@ -248,7 +243,6 @@ section h2 {
     color: var(--ink);
 }
 
-/* Responsive layout adjustments for smaller screens */
 @media (max-width: 600px) {
     .education-grid,
     .MySkills > div {
