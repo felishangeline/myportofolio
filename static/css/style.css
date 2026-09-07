@@ -5,13 +5,14 @@
 }
 
 :root {
-    --ink: #1c1917;
-    --paper: #faf6f0;
-    --accent: #d95d39;
-    --accent-dark: #a8442a;
-    --line: #e3d9c9;
-    --text-muted: #6b6459;
+    --ink: #081750;
+    --paper: #bfdafa;
+    --accent: #253c69;
+    --accent-dark: #2060b2;
+    --line: #78b1f4;
+    --text-muted: #264775;
     --radius: 4px;
+    --text-box: #eef5fe;
 }
 
 body {
@@ -158,25 +159,101 @@ h1, .brand {
     z-index: 0;
 }
 
+/* Layout & Styling using your custom variables */
+
+section {
+    padding: 4rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+section h2 {
+    font-family: "Space Grotesk", -apple-system, sans-serif;
+    font-size: 1.5rem;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+}
+
+/* Education Section */
 .education-grid {
     display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    grid-template-areas:
-        "edu"
-        "details";
-    gap: 1.5rem 3rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
 }
 
 .edu-header {
-    grid-area: edu;
+    grid-column: 1 / -1;
+    margin-bottom: 0;
 }
 
-.education-details {
-    grid-area: details;
+.education-grid > div:not(.edu-header) {
+    background-color: var(--text-box);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2rem; /* Generous internal padding */
 }
 
-.edu-points {
-    padding: 20px;
+.education-grid h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+/* Skills Section */
+.MySkills > div {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.skillHeader {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.MySkills > div > div:not(.skillHeader) {
+    background-color: var(--text-box);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2rem; /* Generous internal padding */
+}
+
+.MySkills h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+/* Experiences Section */
+.experienceGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.experienceHeader {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.experienceGrid > div:not(.experienceHeader) {
+    background-color: var(--text-box);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 2rem; /* Generous internal padding */
+}
+
+.experienceGrid h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+/* Responsive layout adjustments for smaller screens */
+@media (max-width: 600px) {
+    .education-grid,
+    .MySkills > div {
+        grid-template-columns: 1fr;
+    }
 }
 
 .avatar {
