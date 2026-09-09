@@ -2,6 +2,8 @@ from django.shortcuts import render
 
 from main.models import Experience
 
+from main.models import Skills
+
 
 def show_main(request):
     context = {
@@ -22,3 +24,13 @@ def show_experience(request):
         "experience_list": Experience.objects.all(),
     }
     return render(request, "experience.html", context)
+
+def show_skills(request):
+    context = {
+        "name" : "Felisha Angeline",
+        "skill_list": "Language Proficiency",
+    }
+    return render(request, "skills.html", context)
+
+def delete_Object(request):
+    return ;

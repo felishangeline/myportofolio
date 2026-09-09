@@ -30,11 +30,19 @@ class Experience(models.Model):
         return self.ended_at is None
 
 class Skills(models.Model):
-    COMMON_SKILLS = [
-        ('language', 'Language')
+    SKILL_LEVEL = [
+        ("Beginner", "beginner"),
+        ("Intermediate", "intermediate"),
+        ("Advanced", "advanced"),
+        ("Expert", "expert"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
     description = models.TextField()
+    skill_gained = models.CharField(max_length=255, default='kosong')
+
+    def __str__(self):
+        return self.title
+
     
