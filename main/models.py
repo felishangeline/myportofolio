@@ -41,6 +41,7 @@ class Skills(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     skill_gained = models.CharField(max_length=255, default='kosong')
+    skill_level = models.CharField(max_length=200, choices=SKILL_LEVEL, default="Beginner")
 
     def __str__(self):
         return self.title
