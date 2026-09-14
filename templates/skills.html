@@ -28,14 +28,14 @@
             <h1>Skills</h1>
 
             <div class="experience-grid">
-                {% for experience in experience_list %}
+                {% for skill in skill_list %}
                     <article class="experience-card">
                         <span class="experience-category">
-                            {{ experience.get_category_display }}
+                            {{ skill.get_category_display }}
                         </span>
-                        <h2>{{ experience.title }}</h2>
+                        <h2>{{ skill.title }}</h2>
                         <p class="experience-description">
-                            {{ experience.description }}
+                            {{ skill.description }}
                         </p>
 
                         {% if experience.is_ongoing %}
