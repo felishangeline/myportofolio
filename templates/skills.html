@@ -9,7 +9,7 @@
     <section class="skill-section" id="skill">
     <div class="container">
         <p class="section-kicker">What i gained</p>
-    
+
         <div class="skills-header">
         <h1>Skills</h1>
         <a href="{% url 'main:create_skills' %}" class="button skills-add-button">
@@ -19,18 +19,18 @@
         </div>
 
         <form method="get" action="{% url 'main:show_skills' %}" class="skills-search">
-            <input type="search"
+        <input type="search"
                name="title"
                value="{{ title_query }}"
                placeholder="Cari berdasarkan nama skill"
                class="skills-search__input"
                aria-label="Cari berdasarkan nama skill">
-            <button type="submit" class="button">Cari</button>
+        <button type="submit" class="button">Cari</button>
         </form>
 
         <div class="experience-grid skills-grid">
         {% for skill in skill_list %}
-        <article class="experience-card">
+            <article class="experience-card">
             <span class="experience-category">
                 {{ skill.get_category_display }}
             </span>
@@ -38,13 +38,62 @@
             <p class="experience-description">
                 {{ skill.description }}
             </p>
-        </article>
+
+            <div class="skills-actions">
+                <button type="button"
+                      class="button button-danger"
+                      popovertarget="delete-skill-{{ skill.id }}"
+                      aria-label="Hapus {{ skill.title }}"
+                      title="Hapus skill">
+                Hapus Skill
+                </button>
+            </div>
+
+            <div id="delete-skill-{{ skill.id }}"
+                 class="skills-delete-modal"
+                 popover="auto"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-labelledby="delete-skill-title-{{ skill.id }}">
+              
+                <button type="button"
+                      class="skills-delete-modal__backdrop"
+                      popovertarget="delete-skill-{{ skill.id }}"
+                      popovertargetaction="hide"
+                      aria-label="Tutup konfirmasi hapus"></button>
+
+            <div class="skills-delete-modal__content">
+                <button type="button"
+                        class="skills-delete-modal__close"
+                        popovertarget="delete-skill-{{ skill.id }}"
+                        popovertargetaction="hide"
+                        aria-label="Tutup konfirmasi hapus">×</button>
+                
+                <h2 id="delete-skill-title-{{ skill.id }}">Hapus Skill?</h2>
+                <p>
+                    Apakah Anda yakin ingin menghapus
+                    <strong>{{ skill.title }}</strong>?
+                </p>
+                
+                    <div class="skills-delete-modal__actions">
+                    <button type="button"
+                          class="button button-secondary"
+                          popovertarget="delete-skill-{{ skill.id }}"
+                          popovertargetaction="hide">Batal</button>
+                
+                    <form method="post" action="{% url 'main:delete_skills' skill.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="button button-danger">Ya, Hapus</button>
+                    </form>
+                </div>
+                </div>
+            </div>
+
+            </article>
         {% empty %}
-        <p class="empty-state">
-            No skills added
-        </p>
+            <p class="empty-state">No skills added</p>
         {% endfor %}
-    </div>
+        </div>
     </div>
     </section>
 </main>

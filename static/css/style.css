@@ -376,7 +376,7 @@ section h2 {
 }
 
 .form-error {
-    color: #b42318;
+    /* color: #b42318; */
     font-size: 0.85rem;
     margin-top: 0.35rem;
 }
@@ -562,7 +562,7 @@ section h2 {
 }
 
 .button-danger {
-    background: #b42318;
+    /* background: #4c201d; */
 }
 
 @media (max-width: 600px) {
