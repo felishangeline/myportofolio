@@ -54,11 +54,28 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 def show_skills(request):
+    json_response = get_skills_json(request)
+
+    skills = serializers.deserialize(
+        "json",
+        json_response.content.decode("utf-8"),
+    )
+    skills = [skills.object for skills in skills]
+    title_query = request.GET.get("title", "").strip()
+
     context = {
         "name" : "Felisha Angeline",
-        "skill_list": Skills.objects.all(),
+        "skill_list": skills,
+        "title_query": title_query,
     }
     return render(request, "skills.html", context)
 
-def delete_Object(request):
-    return ;
+def delete_skills(request, skills_id):
+    skills = get_object_or_404(Skills, pk=skills_id)
+
+    if request.method == "POST":
+        skills.delete()
+        messages.success(request, "Skill berhasil dihapus!")
+        return redirect("main:show_skills")
+
+    return redirect("main:show_skills")

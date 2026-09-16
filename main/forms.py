@@ -13,8 +13,8 @@ class SkillForm(ModelForm):
         ]
 
         labels = {
-            "title": "Nama Proyek",
-            "description": "Deskripsi Proyek",
+            "title": "Nama Skill",
+            "description": "Deskripsi Skill",
             "skill_gained": "dimana mendapatkan skill",
             "skill_level": "level skill yang dimiliki",
         }
@@ -40,7 +40,7 @@ class SkillForm(ModelForm):
 
             "skill_level": TextInput(
                 attrs = {
-                    "placeholder": "skill level",
+                    "placeholder": "beginner, advanced, intermediate",
                 }
             ),
         }
