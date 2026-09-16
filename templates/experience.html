@@ -1,3 +1,5 @@
+{% extends 'base.html' %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,7 +22,7 @@
             </nav>
         </div>
     </header>
-
+    {% block content %}
     <main>
     <section class="experience-section" id="experience">
         <div class="container">
@@ -52,8 +54,9 @@
             </div>
         </div>
     </section>
-</main>
+    </main>
 
+    {% endblock content %}
     <footer class="site-footer">
         <div class="container">
             <p>&copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
