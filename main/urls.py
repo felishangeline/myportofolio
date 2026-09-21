@@ -1,6 +1,14 @@
 from django.urls import path
 
-from main.views import delete_skills, get_skills_json, show_main, show_experience, show_skills, create_skills
+from main.views import (
+    delete_skills, 
+    get_skills_json, 
+    show_main, 
+    show_experience, 
+    show_skills, 
+    create_skills,
+    edit_skills,
+    )
 
 app_name = "main"
 
