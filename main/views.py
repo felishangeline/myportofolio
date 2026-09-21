@@ -79,3 +79,19 @@ def delete_skills(request, skills_id):
         return redirect("main:show_skills")
 
     return redirect("main:show_skills")
+
+def edit_skills(request, skills_id):
+    skills = get_object_or_404(Skills, pk=skills_id)
+    form = SkillForm(request.POST or None, instance=skills)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Skill berhasil diupdate!")
+        return redirect("main:show_skills")
+
+    context = {
+        "name": "Felisha Angeline",
+        "form": form,
+        "skills": skills,
+    }
+    return render(request, "skills_form.html", context)

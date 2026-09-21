@@ -562,7 +562,7 @@ section h2 {
 }
 
 .button-danger {
-    /* background: #4c201d; */
+    background: #1d264c;
 }
 
 @media (max-width: 600px) {

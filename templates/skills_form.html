@@ -1,15 +1,13 @@
 {% extends "base.html" %}
 {% block meta %}
-    <title>Add Skill - {{ name }}</title>
+    <title>{% if form.instance.pk %}Edit Skill{% else %}Add Skill{% endif %} - {{ name }}</title>
 {% endblock meta %}
 {% block content %}
     <main>
         <section class="experience-section">
             <div class="container">
-                <h1>Add New Skills</h1>
-                <form method="post"
-                        action="{% url 'main:create_skills' %}"
-                        class="skill-form">
+                <h1>{% if form.instance.pk %}Edit Skill{% else %}Add New Skills{% endif %}</h1>
+                <form method="post" class="skill-form">
                     {% csrf_token %}
                     {% for field in form %}
                         <div class="form-group">
@@ -20,7 +18,9 @@
                             {% endfor %}
                         </div>
                     {% endfor %}
-                    <button type="submit" class="button">Tambah Skill</button>
+                    <button type="submit" class="button">
+                        {% if form.instance.pk %}Simpan Perubahan{% else %}Tambah Skill{% endif %}
+                    </button>
                     <a href="{% url 'main:show_skills' %}" class="button button-secondary">Batal</a>
                 </form>
             </div>
