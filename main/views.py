@@ -3,10 +3,15 @@ from django.core import serializers
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from main.forms import SkillForm
-from main.models import Experience
+from main.forms import (
+    SkillForm, 
+    ExperienceForm,
+    )
 
-from main.models import Skills
+from main.models import (
+    Experience, 
+    Skills,
+    )
 
 def get_skills_json(request):
     title_query = request.GET.get("title", "").strip()
@@ -95,3 +100,40 @@ def edit_skills(request, skills_id):
         "skills": skills,
     }
     return render(request, "skills_form.html", context)
+
+def create_experience(request):
+    form = ExperienceForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Pengalaman baru berhasil ditambahkan!")
+        return redirect("main:show_experience")
+
+    context = {
+        "name": "Felisha Angeline",
+        "form": form,
+    }
+    return render(request, "experience_form.html", context)
+
+def edit_experience(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
+    form = ExperienceForm(request.POST or None, instance=experience)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Pengalaman berhasil diupdate!")
+        return redirect("main:show_experience")
+
+    context = {
+        "name": "Felisha Angeline",
+        "form": form,
+        "experience": experience,
+    }
+    return render(request, "experience_form.html", context)
+
+def delete_experience(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
+    if request.method == "POST":
+        experience.delete()
+        messages.success(request, "Pengalaman berhasil dihapus!")
+    return redirect("main:show_experience")

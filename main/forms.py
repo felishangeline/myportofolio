@@ -1,6 +1,6 @@
-from django.forms import ModelForm, TextInput, Textarea, URLInput
+from django.forms import ModelForm, TextInput, Textarea, URLInput, DateTimeInput
 
-from main.models import Skills
+from main.models import Skills, Experience
 
 class SkillForm(ModelForm):
     class Meta:
@@ -43,4 +43,22 @@ class SkillForm(ModelForm):
                     "placeholder": "beginner, advanced, intermediate",
                 }
             ),
+        }
+
+class ExperienceForm(ModelForm):
+    class Meta:
+        model = Experience
+        fields = [
+            "title",
+            "description",
+            "category",
+            "thumbnail",
+            "ended_at",
+        ]
+        
+        widgets = {
+            "title": TextInput(attrs={"placeholder": "Software Engineering Intern"}),
+            "description": Textarea(attrs={"placeholder": "Deskripsikan pengalamanmu...", "rows": 3}),
+            "thumbnail": URLInput(attrs={"placeholder": "https://example.com/image.jpg"}),
+            "ended_at": DateTimeInput(attrs={"type": "datetime-local"}),
         }
