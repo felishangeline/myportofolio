@@ -39,4 +39,9 @@ urlpatterns = [
         toggle_star, 
         name="toggle_star",
         ),
+    path(
+            "experience/<uuid:experience_id>/star/", 
+            toggle_star, 
+            name="toggle_experience_star",
+            ),
 ]

@@ -5,7 +5,6 @@
 
 {% block content %}
 <main>
-    <!-- Menambahkan id="experience" agar konsisten dengan struktur skills -->
     <section class="experience-section" id="experience">
         <div class="container">
             <p class="section-kicker">What I did</p>
@@ -29,7 +28,6 @@
                 <button type="submit" class="button">Cari</button>
             </form>
 
-            <!-- Menambahkan class "skills-grid" di sini agar layout grid-nya sama -->
             <div class="experience-grid skills-grid">
                 {% for exp in experience_list %}
                     <article class="experience-card">
@@ -37,14 +35,10 @@
                         <h2>{{ exp.title }}</h2>
                         <p class="experience-description">{{ exp.description }}</p>
                         
-                        <!-- Menambahkan margin-top: auto agar posisi tombol selalu rata di bagian bawah card -->
                         <div class="skills-actions" style="margin-top: auto;">
                             {% if user.is_superuser %}
-                                <a href="{% url 'main:edit_experience' exp.id %}" class="button">Edit</a>
-                                <form method="post" action="{% url 'main:delete_experience' exp.id %}" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="button button-danger">Hapus</button>
-                                </form>
+                                {% include "components/experience_star.html" with experience=experience %}
+                                {% include "components/skills_delete_modal.html" with skills=skills %}
                             {% endif %}
                         </div>
                     </article>
