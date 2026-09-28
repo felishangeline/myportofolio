@@ -79,7 +79,7 @@ def show_skills(request):
 
     context = {
         "name" : "Felisha Angeline",
-        "skill_list": skills,
+        "skills_list": skills,
         "title_query": title_query,
     }
     return render(request, "skills.html", context)
@@ -90,7 +90,7 @@ def delete_skills(request, skills_id):
 
     if request.method == "POST":
         skills.delete()
-        messages.success(request, "Skill berhasil dihapus!")
+        messages.success(request, "skills berhasil dihapus!")
         return redirect("main:show_skills")
 
     return redirect("main:show_skills")
@@ -102,7 +102,7 @@ def edit_skills(request, skills_id):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Skill berhasil diupdate!")
+        messages.success(request, "skills berhasil diupdate!")
         return redirect("main:show_skills")
 
     context = {
@@ -190,12 +190,12 @@ def logout_user(request):
 
 @login_required(login_url="/login/")
 def toggle_star(request, skill_id):
-    skill = get_object_or_404(Skills, pk=skill_id)
+    skills = get_object_or_404(Skills, pk=skill_id)
 
     if request.method == "POST":
-        if request.user in skill.starred_by.all():
-            skill.starred_by.remove(request.user)
+        if request.user in skills.starred_by.all():
+            skills.starred_by.remove(request.user)
         else:
-            skill.starred_by.add(request.user)
+            skills.starred_by.add(request.user)
 
     return redirect("main:show_skills")

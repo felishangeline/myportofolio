@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Skill - {{ name }}</title>
+<title>Skills - {{ name }}</title>
 {% endblock meta %}
 
 {% block content %}
 <main>
-    <section class="skill-section" id="skill">
+    <section class="skills-section" id="skills">
     <div class="container">
         <p class="section-kicker">What i gained</p>
 
@@ -15,7 +15,7 @@
         {% if user.is_superuser %}
         <a href="{% url 'main:create_skills' %}" class="button skills-add-button">
             <span aria-hidden="true">+</span>
-            Tambah Skill
+            Tambah skills
         </a>
         {% endif %}
         </div>
@@ -24,9 +24,9 @@
         <input type="search"
                name="title"
                value="{{ title_query }}"
-               placeholder="Cari berdasarkan nama skill"
+               placeholder="Cari berdasarkan nama skills"
                class="skills-search__input"
-               aria-label="Cari berdasarkan nama skill">
+               aria-label="Cari berdasarkan nama skills">
         <button type="submit" class="button">Cari</button>
         </form>
 
@@ -34,22 +34,23 @@
         {% for skill in skill_list %}
             <article class="experience-card">
                     <span class="experience-category">
-                        {{ skill.skill_level }}
+                        {{ skills.skill_level }}
                     </span>
-                <h2>{{ skill.title }}</h2>
+                <h2>{{ skills.title }}</h2>
                 <p class="experience-description">
-                    {{ skill.description }}
+                    {{ skills.description }}
                 </p>
                 
                 <p class="experience-status">
-                    <strong>Didapat di:</strong> {{ skill.skill_gained }}
+                    <strong>Didapat di:</strong> {{ skills.skill_gained }}
                 </p>
 
                 <div class="skills-actions">
-                    {% if skill.skill_url %}
-                        <a href="{{ skill.skills_url }}" class="button">Lihat Skills</a>
+                    {% if skills.skill_url %}
+                        <a href="{{ skills.skills_url }}" class="button">Lihat Skills</a>
                     {% endif %}
                     {% if user.is_superuser %}
+                        {% include "components/skills_star.html" with skills=skills %}
                         {% include "components/skills-delete-modal.html" with skills=skills %}
                     {% endif %}
                 </div>

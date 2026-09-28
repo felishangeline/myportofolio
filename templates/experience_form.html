@@ -7,7 +7,7 @@
         <section class="experience-section">
             <div class="container">
                 <h1>{% if form.instance.pk %}Edit Experience{% else %}Add New Experience{% endif %}</h1>
-                <form method="post" class="skill-form">
+                <form method="post" class="skills-form">
                     {% csrf_token %}
                     {% for field in form %}
                         <div class="form-group">
