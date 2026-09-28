@@ -1,6 +1,8 @@
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login as auth_login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core import serializers
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -24,10 +26,10 @@ def get_skills_json(request):
     if title_query:
         skills = skills.filter(title__icontains=title_query)
 
-    skills_json = serializers.serialize("json", skills)
+    skills_json = serializers.serialize("json", skills, use_natural_foreign_keys=True)
     return HttpResponse(skills_json, content_type="application/json")
-    
 
+@login_required(login_url="/login/")
 def create_skills(request):
     form = SkillForm(request.POST or None)
 
@@ -82,6 +84,7 @@ def show_skills(request):
     }
     return render(request, "skills.html", context)
 
+@login_required(login_url="/login/")
 def delete_skills(request, skills_id):
     skills = get_object_or_404(Skills, pk=skills_id)
 
@@ -92,6 +95,7 @@ def delete_skills(request, skills_id):
 
     return redirect("main:show_skills")
 
+@login_required(login_url="/login/")
 def edit_skills(request, skills_id):
     skills = get_object_or_404(Skills, pk=skills_id)
     form = SkillForm(request.POST or None, instance=skills)
@@ -108,6 +112,7 @@ def edit_skills(request, skills_id):
     }
     return render(request, "skills_form.html", context)
 
+@login_required(login_url="/login/")
 def create_experience(request):
     form = ExperienceForm(request.POST or None)
 
@@ -122,6 +127,7 @@ def create_experience(request):
     }
     return render(request, "experience_form.html", context)
 
+@login_required(login_url="/login/")
 def edit_experience(request, experience_id):
     experience = get_object_or_404(Experience, pk=experience_id)
     form = ExperienceForm(request.POST or None, instance=experience)
@@ -138,6 +144,7 @@ def edit_experience(request, experience_id):
     }
     return render(request, "experience_form.html", context)
 
+@login_required(login_url="/login/")
 def delete_experience(request, experience_id):
     experience = get_object_or_404(Experience, pk=experience_id)
     if request.method == "POST":
@@ -151,7 +158,7 @@ def register(request):
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Akun berhasil dibuat. Silahkan login.")
-        return redirect("main: login")
+        return redirect("main:login")
 
     context = {
         "name": "Felisha Angeline",
@@ -164,7 +171,7 @@ def login_user(request):
 
     if request.method == "POST" and form.is_valid():
         user = form.get_user()
-        login(request, user)
+        auth_login(request, user)
         response = redirect("main:show_main")
         response.set_cookie('last_login', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         return response
@@ -180,3 +187,15 @@ def logout_user(request):
     response = redirect("main:show_main")
     response.delete_cookie('last_login')
     return response
+
+@login_required(login_url="/login/")
+def toggle_star(request, skill_id):
+    skill = get_object_or_404(Skills, pk=skill_id)
+
+    if request.method == "POST":
+        if request.user in skill.starred_by.all():
+            skill.starred_by.remove(request.user)
+        else:
+            skill.starred_by.add(request.user)
+
+    return redirect("main:show_skills")

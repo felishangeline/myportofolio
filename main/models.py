@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -42,6 +43,9 @@ class Skills(models.Model):
     description = models.TextField()
     skill_gained = models.CharField(max_length=255, default='kosong')
     skill_level = models.CharField(max_length=200, choices=SKILL_LEVEL, default="Beginner")
+    starred_by = models.ManyToManyField(
+        User, related_name="starred_skills", blank=True
+    )
 
     def __str__(self):
         return self.title

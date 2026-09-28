@@ -12,10 +12,12 @@
 
         <div class="skills-header">
         <h1>Skills</h1>
+        {% if user.is_superuser %}
         <a href="{% url 'main:create_skills' %}" class="button skills-add-button">
             <span aria-hidden="true">+</span>
             Tambah Skill
         </a>
+        {% endif %}
         </div>
 
         <form method="get" action="{% url 'main:show_skills' %}" class="skills-search">
