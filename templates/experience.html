@@ -29,16 +29,16 @@
             </form>
 
             <div class="experience-grid skills-grid">
-                {% for exp in experience_list %}
+                {% for experience in experience_list %}
                     <article class="experience-card">
-                        <span class="experience-category">{{ exp.get_category_display }}</span>
-                        <h2>{{ exp.title }}</h2>
-                        <p class="experience-description">{{ exp.description }}</p>
+                        <span class="experience-category">{{ experience.get_category_display }}</span>
+                        <h2>{{ experience.title }}</h2>
+                        <p class="experience-description">{{ experience.description }}</p>
                         
                         <div class="skills-actions" style="margin-top: auto;">
                             {% if user.is_superuser %}
                                 {% include "components/experience_star.html" with experience=experience %}
-                                {% include "components/skills_delete_modal.html" with skills=skills %}
+                                {% include "components/experience_delete_modal.html" with skills=skills %}
                             {% endif %}
                         </div>
                     </article>

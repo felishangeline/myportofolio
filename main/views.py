@@ -85,8 +85,8 @@ def show_skills(request):
     return render(request, "skills.html", context)
 
 @login_required(login_url="/login/")
-def delete_skills(request, skills_id):
-    skills = get_object_or_404(Skills, pk=skills_id)
+def delete_skill(request, skill_id):
+    skills = get_object_or_404(Skills, pk=skill_id)
 
     if request.method == "POST":
         skills.delete()
@@ -96,8 +96,8 @@ def delete_skills(request, skills_id):
     return redirect("main:show_skills")
 
 @login_required(login_url="/login/")
-def edit_skills(request, skills_id):
-    skills = get_object_or_404(Skills, pk=skills_id)
+def edit_skill(request, skill_id):
+    skills = get_object_or_404(Skills, pk=skill_id)
     form = SkillForm(request.POST or None, instance=skills)
 
     if request.method == "POST" and form.is_valid():

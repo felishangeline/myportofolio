@@ -34,7 +34,7 @@
                     class="button button-secondary"
                     popovertarget="delete-skills-{{ skill.id }}"
                     popovertargetaction="hide">Batal</button>
-            <form method="post" action="{% url 'main:delete_skills' skill.id %}">
+            <form method="post" action="{% url 'main:delete_skill' skill.id %}">
                 {% csrf_token %}
                 <button type="submit" class="button button-danger">Ya, Hapus</button>
             </form>
