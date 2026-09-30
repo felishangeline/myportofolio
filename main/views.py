@@ -4,8 +4,9 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core import serializers
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 import datetime
 
@@ -68,19 +69,12 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 def show_skills(request):
-    json_response = get_skills_json(request)
-
-    skills = serializers.deserialize(
-        "json",
-        json_response.content.decode("utf-8"),
-    )
-    skills = [skills.object for skills in skills]
     title_query = request.GET.get("title", "").strip()
 
     context = {
         "name" : "Felisha Angeline",
-        "skill_list": skills,
         "title_query": title_query,
+        "form": SkillForm(),
     }
     return render(request, "skills.html", context)
 
@@ -189,7 +183,7 @@ def logout_user(request):
     return response
 
 @login_required(login_url="/login/")
-def toggle_star(request, skill_id):
+def toggle_skill_star(request, skill_id):
     skill = get_object_or_404(Skills, pk=skill_id)
 
     if request.method == "POST":
@@ -199,3 +193,60 @@ def toggle_star(request, skill_id):
             skill.starred_by.add(request.user)
 
     return redirect("main:show_skills")
+
+@login_required(login_url="/login/")
+def toggle_experience_star(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
+
+    if request.method == "POST":
+        if request.user in experience.starred_by.all():
+            experience.starred_by.remove(request.user)
+        else:
+            experience.starred_by.add(request.user)
+
+    return redirect("main:show_experience")
+
+def get_projects_json(request):
+    title_query = request.GET.get("title", "").strip()
+    skills = Skills.objects.prefetch_related('starred_by').all()
+
+    if title_query:
+        skills = skills.filter(title_icontains=title_query)
+
+    data = []
+    for skill in skills:
+        starred_users = skill.starred_by.all()
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append({
+            "pk": str(skill.id),
+            "fields": {
+                "title": skill.title,
+                "description": skill.description,
+                "skill_gained": skill.skill_gained,
+                "skill_level": skill.skill_level,
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
+
+@require_POST
+def create_skill_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan skill."},
+            status = 403,
+        )
+    
+    form = SkillForm(request.POST)
+    if form.is_valid():
+        skill = form.save()
+        return JsonResponse(
+            {"message": "Skill berhasil ditambahkan.", "pk": str(skill.id)},
+            status = 201,
+        )
+    return JsonResponse({"errors": form.errors.get_json_data()}, status = 400)

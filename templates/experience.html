@@ -10,6 +10,9 @@
             <p class="section-kicker">What I did</p>
 
             <div class="skills-header">
+                <button class="button button-secondary" onclick="showToast('Notifikasi Sistem', 'Project berhasil dimuat dengan baik!', 'success')">
+                    Test Toast Notifikasi
+                </button>
                 <h1>Experience</h1>
                 {% if user.is_superuser %}
                     <a href="{% url 'main:create_experience' %}" class="button skills-add-button">

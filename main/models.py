@@ -23,6 +23,7 @@ class Experience(models.Model):
     thumbnail = models.URLField(blank=True, null=True)
     started_at = models.DateTimeField(auto_now_add=True)
     ended_at = models.DateTimeField(blank=True, null=True)
+    starred_by = models.ManyToManyField(User, related_name='starred_experiences', blank=True)
     def __str__(self):
         return self.title
     
@@ -50,4 +51,14 @@ class Skills(models.Model):
     def __str__(self):
         return self.title
 
-    
+class Projects(models.Model):
+
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=250)
+    description = models.TextField()
+    time = models.DateField()
+
+
+    def __str__(self):
+        return self.title

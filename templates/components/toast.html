@@ -1,0 +1,15 @@
+{% load static %}
+<div id="toast-component" class="toast-component toast-hidden" popover="manual">
+    <!-- 
+    * popover="manual" makes toast dapat ditampilkan lewat JS ke top layer browser -> always on top of other elements
+    -->
+    <div class="toast-content">
+        <h3 id="toast-title" class="toast-title">
+            This is a Sample Message
+        </h3>
+        <p id="toast-message" class="toast-message">
+            This is a Sample Message
+        </p>
+    </div>
+</div>
+<script src="{% static 'js/toast.js' %}"></script>
