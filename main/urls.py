@@ -19,6 +19,7 @@ from main.views import (
     toggle_skill_star,
     toggle_experience_star,
     create_project,
+    show_projects,
     )
 
 app_name = "main"
@@ -51,4 +52,5 @@ urlpatterns = [
             ),
     path("skills/add-ajax/", create_skill_ajax, name="create_skill_ajax"),
     path("api/experience/", get_experience_json, name="get_experiences_json"),
+    path("projects/", show_projects, name="show_projects"),
 ]

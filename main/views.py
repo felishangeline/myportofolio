@@ -96,6 +96,15 @@ def create_project(request):
     }
     return render(request, "projects_form.html", context)
 
+def show_projects(request):
+    title_query = request.GET.get("title", "").strip()
+    context = {
+        "name": "Felisha Angeline",
+        "title_query": title_query,
+    }
+
+    return render(request, "projects.html", context)
+
 def show_experience(request):
     context = {
         "name": "Felisha Angeline",
