@@ -25,3 +25,13 @@ Update: Pertanyaan Reflektif
 2. JSON memiliki struktur yang key-value based dan array yang minim karakter syntax sehingga memiliki ukuran file yang lebih kecil. JSON juga lebih mudah diparsing di JavaScript karena mirip dengan JavaScript.
 
 3. 
+
+===================================================================
+
+//Pertanyaan Reflektif IA5: Web Interactivity with JavaScript//
+
+1. Debouncing is a programming technique yang memaksa a function to tunggu sebelom dieksekusi. Penting di AJAX karena mencegah perlunya mencari di setiap ketikan key.
+
+2. Fungsi await di fetch() digunakan untuk meberitahu JavaScript agar menunda eksekusi baris kode 
+
+3. Serangan XSS adalah celah keamanan where penyerang bisa berhasil memasukkan kode berbahaya ke website 
