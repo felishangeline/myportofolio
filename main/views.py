@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 import datetime
 
 from main.forms import (
+    ProjectForm,
     SkillForm, 
     ExperienceForm,
     )
@@ -18,17 +19,37 @@ from main.forms import (
 from main.models import (
     Experience, 
     Skills,
+    Project,
     )
 
 def get_skills_json(request):
     title_query = request.GET.get("title", "").strip()
-    skills = Skills.objects.all()
+    
+    skills = Skills.objects.prefetch_related('starred_by').all()
 
     if title_query:
         skills = skills.filter(title__icontains=title_query)
 
-    skills_json = serializers.serialize("json", skills, use_natural_foreign_keys=True)
-    return HttpResponse(skills_json, content_type="application/json")
+    data = []
+    for skill in skills:
+        starred_users = skill.starred_by.all()
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append({
+            "pk": str(skill.id),
+            "fields":{
+                "title": skill.title,
+                "description": skill.description,
+                "skill_gained": skill.skill_gained,
+                "skill_level": skill.skill_level,
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
 
 @login_required(login_url="/login/")
 def create_skills(request):
@@ -60,6 +81,20 @@ def show_main(request):
     }
     return render(request, "index.html", context)
 
+@login_required(login_url="/login/")
+def create_project(request):
+    form = ProjectForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Proyek baru berhasil ditambahkan!")
+        return redirect("main:show_projects")
+
+    context = {
+        "name": "Burhan",
+        "form": form,
+    }
+    return render(request, "projects_form.html", context)
 
 def show_experience(request):
     context = {
@@ -208,24 +243,53 @@ def toggle_experience_star(request, experience_id):
 
 def get_projects_json(request):
     title_query = request.GET.get("title", "").strip()
-    skills = Skills.objects.prefetch_related('starred_by').all()
+
+    projects = Project.objects.prefetch_related('starred_by').all()
 
     if title_query:
-        skills = skills.filter(title_icontains=title_query)
+        projects = projects.filter(title_icontains=title_query)
 
     data = []
-    for skill in skills:
-        starred_users = skill.starred_by.all()
+    for project in projects:
+        starred_users = project.starred_by.all()
         is_starred = request.user in starred_users if request.user.is_authenticated else False
         starred_by_names = ", ".join([u.username for u in starred_users])
 
         data.append({
-            "pk": str(skill.id),
+            "pk": str(project.id),
             "fields": {
-                "title": skill.title,
-                "description": skill.description,
-                "skill_gained": skill.skill_gained,
-                "skill_level": skill.skill_level,
+                "title": project.title,
+                "description": project.description,
+                "tech_stack": project.tech_stack,
+                "project_url": getattr(project, 'project_url', ''),
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
+
+def get_experience_json(request):
+    title_query = request.GET.get("title", "").strip()
+
+    experiences = Experience.objects.prefetch_related('starred_by').all()
+
+    if title_query:
+        experiences = experiences.filter(title__icontains = title_query)
+
+    data = []
+    for experience in experiences:
+        starred_users = experience.starred_by.all()
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append({
+            "pk": str(experience.id),
+            "fields":{
+                "title": experience.title,
+                "description": experience.description,
+                "category_display": experience.get_category_display(), 
                 "star_count": starred_users.count(),
                 "is_starred": is_starred,
                 "starred_by_names": starred_by_names,

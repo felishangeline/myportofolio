@@ -111,6 +111,7 @@
 <script>
     // Konfigurasi
     const BASE_SKILLS_ENDPOINT = "{% url 'main:get_skills_json' %}";
+    const CREATE_SKILL_ENDPOINT = "{% url 'main:create_skill_ajax' %}"; // FIX: Ubah nama variabel
     const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
     let projectsAbortController;
 
@@ -121,12 +122,22 @@
     const gridContainer = document.getElementById('grid');
     const searchForm = document.getElementById('skill-search-form');
     const searchInput = document.getElementById('search-input');
+    const skillForm = document.getElementById('skill-form');
 
-    // Tambahan Timer Debounce
+    // Timer Debounce
     const SEARCH_DEBOUNCE_DELAY = 300;
     let searchDebounceTimer;
 
-    // Menyembunyikan/Menampilkan section halaman
+    // XSS PROTECTION 
+    function escapeHtml(unsafe) {
+        return (unsafe || "").toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
         loadingState.classList.toggle('hide', !showLoading);
         errorState.classList.toggle('hide', !showError);
@@ -134,7 +145,6 @@
         gridContainer.classList.toggle('hide', !showGrid);
     }
 
-    // Membuat elemen card skill
     function buildSkillCardElement(item) {
         const skill = item.fields;
         const skillId = item.pk;
@@ -142,11 +152,9 @@
         const articleElement = document.createElement('article');
         articleElement.className = 'experience-card';
 
-        // Dummy UUID digunakan untuk digantikan oleh ID asli dari data JSON
-        const deleteUrl = "{% url 'main:delete_project' '00000000-0000-0000-0000-000000000000' %}"
-            .replace('00000000-0000-0000-0000-000000000000', projectId);
-        const starUrl = "{% url 'main:toggle_star' '00000000-0000-0000-0000-000000000000' %}"
-            .replace('00000000-0000-0000-0000-000000000000', projectId);
+        // URL dengan Dummy UUID
+        const deleteUrl = "{% url 'main:delete_skill' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', skillId);
+        const starUrl = "{% url 'main:toggle_star' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', skillId);
 
         const deleteHtml = IS_SUPERUSER 
             ? `<form method="post" action="${deleteUrl}" style="display:inline;">
@@ -158,32 +166,24 @@
         const isStarredClass = skill.is_starred ? " is-starred" : "";
         const starText = skill.is_starred ? "Unstar" : "Star";
         const starTitle = skill.star_count > 0 
-            ? `Dibintangi oleh ${skill.starred_by_names}` 
+            ? `Dibintangi oleh ${escapeHtml(skill.starred_by_names)}` 
             : "Jadilah yang pertama memberi star";
 
-        // Komponen card
+        // Komponen card dengan escapeHtml
         const completeCardHtml = `
-            ${imageHtml}
-            <h2>${skill.title}</h2>
-            <span class="experience-category">${skill.tech_stack}</span>
-            <p class="experience-description">${skill.description}</p>
-            <div class="skill-card-actions">
-                <div class="skill-actions">
-                    ${urlHtml}
-                    
-                    <form method="post" action="${starUrl}" class="star-form">
-                        {% csrf_token %}
-                        <button type="submit" 
-                                class="button button-star${isStarredClass}"
-                                title="${starTitle}">
-                            <span aria-hidden="true">★</span>
-                            ${starText}
-                            <span class="star-count">${skill.star_count}</span>
-                        </button>
-                    </form>
-
-                    ${deleteHtml}
-                </div>
+            <span class="experience-category">${escapeHtml(skill.skill_level)}</span>
+            <h2>${escapeHtml(skill.title)}</h2>
+            <p class="experience-description">${escapeHtml(skill.description)}</p>
+            <p class="experience-status"><strong>Didapat di:</strong> ${escapeHtml(skill.skill_gained)}</p>
+            
+            <div class="skills-actions">
+                <form method="post" action="${starUrl}" class="star-form" style="display:inline-block; margin-right: 10px;">
+                    {% csrf_token %}
+                    <button type="submit" class="button button-star${isStarredClass}" title="${starTitle}">
+                        <span aria-hidden="true">★</span> ${starText} <span class="star-count">${skill.star_count}</span>
+                    </button>
+                </form>
+                ${deleteHtml}
             </div>
         `;
 
@@ -191,14 +191,12 @@
         return articleElement;
     }
 
-    // Fetch data skill
     async function fetchSkills(searchQuery = "") {
         if (projectsAbortController) projectsAbortController.abort();
         projectsAbortController = new AbortController();
 
         try {
             displayPageSection({ showLoading: true });
-
             const url = searchQuery ? `${BASE_SKILLS_ENDPOINT}?title=${encodeURIComponent(searchQuery)}` : BASE_SKILLS_ENDPOINT;
 
             const response = await fetch(url, {
@@ -207,7 +205,6 @@
             });
 
             if (!response.ok) throw new Error('Failed to fetch data');
-
             const projectData = await response.json();
 
             if (projectData.length === 0) {
@@ -215,7 +212,7 @@
             } else {
                 gridContainer.innerHTML = '';
                 projectData.forEach(item => {
-                    gridContainer.appendChild(buildProjectCardElement(item));
+                    gridContainer.appendChild(buildSkillCardElement(item));
                 });
                 displayPageSection({ showGrid: true });
             }
@@ -226,20 +223,13 @@
         }
     }
 
-    // Event Handlers untuk Form Search
-    // searchForm.addEventListener('submit', function(e) {
-    //     e.preventDefault(); // Mencegah reload halaman
-    //     fetchSkills(searchInput.value.trim()); // Jalankan pencarian via AJAX
-    // });
-
-    // Ganti event handler searchForm with this
     function searchSkills() {
-    fetchSkills(searchInput.value.trim());
+        fetchSkills(searchInput.value.trim());
     }
 
+    // Event Listener Debouncing
     searchInput.addEventListener("input", function() {
         clearTimeout(searchDebounceTimer);
-
         searchDebounceTimer = setTimeout(function() {
             searchSkills();
         }, SEARCH_DEBOUNCE_DELAY);
@@ -252,14 +242,10 @@
     });
 
     function closeSkillModal(){
-        document.getElementById("add-skill-modal").hidePopover();
+        const modal = document.getElementById("add-skill-modal");
+        if(modal) modal.hidePopover();
     }
 
-    //send data from with feth API
-        const CREATE_PROJECT_ENDPOINT = "{% url 'main:create_project_ajax' %}";
-    const skillForm = document.getElementById('skill-form');
-
-    // Membaca nilai cookie, digunakan untuk mengambil token CSRF
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -275,10 +261,8 @@
         return cookieValue;
     }
 
-    // Mengirim data form ke server
     async function addSkill(event) {
         event.preventDefault();
-
         const submitButton = skillForm.querySelector('button[type="submit"]');
         submitButton.disabled = true;
 
@@ -313,8 +297,8 @@
         skillForm.addEventListener('submit', addSkill);
     }
 
-// Start application
-fetchSkills(searchInput.value.trim());
+    // Start application
+    fetchSkills(searchInput.value.trim());
 </script>
 
 {% endblock content %}
