@@ -6,7 +6,7 @@
 
 {% block content %}
 <main>
-    <section class="skill-section" id="skill">
+    <section class="experience-section" id="skill">
     <div class="container">
         <p class="section-kicker">What i gained</p>
 
@@ -14,7 +14,7 @@
         <h1>Skills</h1>
         {% if user.is_superuser %}
         <button type="button"
-                class="button skill-add-button"
+                class="button skills-add-button"
                 popovertarget="add-skill-modal">
             <span aria-hidden="true">
                 +
@@ -24,23 +24,13 @@
         {% endif %}
         </div>
 
-        <!-- <form method="get" action="{% url 'main:show_skills' %}" class="skills-search">
-        <input type="search"
-               name="title"
-               value="{{ title_query }}"
-               placeholder="Cari berdasarkan nama skill"
-               class="skills-search__input"
-               aria-label="Cari berdasarkan nama skill">
-        <button type="submit" class="button">Cari</button>
-        </form> -->
-
-        <form id="skill-search-form" class="skill search">
+        <form id="skill-search-form" class="skills-search">
             <input type="search"
                    id="search-input"
                    name="title"
                    value="{{ title_query }}"
                    placeholder="Cari berdasarkan nama skill"
-                   class="skill-search__input"
+                   class="skills-search__input"
                    aria-label="Cari berdasarkan nama skill">
             <button type="submit" class="button">Cari</button>
         </form>
@@ -65,7 +55,7 @@
         </div>
 
         <!-- ===SKILL GRID=== -->
-        <div id="grid" class="experience-grid skill-grid hide"></div>
+        <div id="grid" class="experience-grid skills-grid hide"></div>
 
         <div class="experience-grid skills-grid">
         {% for skill in skill_list %}

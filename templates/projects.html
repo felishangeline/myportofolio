@@ -1,34 +1,74 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block meta %}
 <title>Projects - {{ name }}</title>
 {% endblock meta %}
+
 {% block content %}
-    <main>
-        <section class="experience-section" id="experience">
-            <div class="container">
+<main>
+    <section class="experience-section" id="projects">
+        <div class="container">
             <p class="section-kicker">Karya yang saya bangun</p>
-            <h1>Projects</h1>
-
-                <div class="experience-grid">
-                    {% for project in project_list %}
-                        <article class="experience-card">
-                            <span class="experience-category">{{ project.tech_stack }}</span>
-                            <h2>{{ project.title }}</h2>
-                            <p class="experience-description">{{ project.description }}</p>
-
-                            {% if project.project_url %}
-                                <p class="experience-status">
-                                    <a href="{{ project.project_url }}">Lihat proyek</a>
-                                </p>
-                            {% endif %}
-                        </article>
-                    {% empty %}
-                        <p class="empty-state">
-                            Belum ada proyek yang ditambahkan.
-                        </p>
-                    {% endfor %}
-                </div>
+            <div class="skills-header">
+                <h1>Projects</h1>
+                {% if user.is_superuser %}
+                <button type="button" class="button skills-add-button" popovertarget="project-modal">
+                    <span aria-hidden="true">+</span> Tambah Project
+                </button>
+                {% endif %}
             </div>
-        </section>
-    </main>
+
+            <form id="project-search-form" class="skills-search" role="search">
+                <input type="search" id="project-search-input" name="title"
+                       value="{{ title_query }}" placeholder="Cari berdasarkan nama project"
+                       class="skills-search__input" aria-label="Cari project">
+                <button type="submit" class="button">Cari</button>
+            </form>
+
+            <div id="projects-loading" class="empty-state" aria-live="polite">Memuat projects...</div>
+            <div id="projects-error" class="empty-state hide" role="alert">
+                Gagal memuat data projects. Silakan coba lagi.
+            </div>
+            <div id="projects-empty" class="empty-state hide">Belum ada project yang ditambahkan atau ditemukan.</div>
+            <div id="projects-grid" class="experience-grid skills-grid hide"></div>
+        </div>
+    </section>
+</main>
+
+{% if user.is_superuser %}
+<div id="project-modal" class="skill-form-modal" popover>
+    <div class="skill-form-modal__content">
+        <button type="button" class="skill-form-modal__close" popovertarget="project-modal"
+                aria-label="Tutup">&times;</button>
+        <h2 id="project-modal-title">Tambah Project</h2>
+        <form id="project-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    <small class="form-error hide" data-field-error="{{ field.name }}"></small>
+                </div>
+            {% endfor %}
+            <div class="skills-actions">
+                <button type="submit" class="button">Simpan Project</button>
+                <button type="button" class="button button-secondary" popovertarget="project-modal">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<form id="api-csrf-form" hidden>{% csrf_token %}</form>
+{{ user.is_superuser|json_script:'project-can-manage' }}
+<script>
+    window.projectApiConfig = {
+        listUrl: "{% url 'api:project-list' %}",
+        detailTemplate: "{% url 'api:project-detail' '00000000-0000-0000-0000-000000000000' %}",
+        starTemplate: "{% url 'api:project-star' '00000000-0000-0000-0000-000000000000' %}",
+        canManage: JSON.parse(document.getElementById('project-can-manage').textContent),
+    };
+</script>
+<script src="{% static 'js/projects.js' %}" defer></script>
 {% endblock content %}
