@@ -1,7 +1,36 @@
 from django.utils.html import strip_tags
 from rest_framework import serializers
 
-from main.models import Project
+from main.models import Experience, Project
+
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    star_count = serializers.SerializerMethodField()
+    is_starred = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Experience
+        fields = [
+            "id", "title", "description", "category", "thumbnail",
+            "started_at", "ended_at", "is_ongoing", "star_count", "is_starred",
+        ]
+        read_only_fields = ["id", "started_at", "is_ongoing", "star_count", "is_starred"]
+
+    def validate_title(self, value):
+        value = strip_tags(value).strip()
+        if not value:
+            raise serializers.ValidationError("Title cannot be empty.")
+        return value
+
+    def validate_description(self, value):
+        return strip_tags(value).strip()
+
+    def get_star_count(self, obj):
+        return obj.starred_by.count()
+
+    def get_is_starred(self, obj):
+        request = self.context.get("request")
+        return bool(request and request.user.is_authenticated and obj.starred_by.filter(pk=request.user.pk).exists())
 
 
 class ProjectSerializer(serializers.ModelSerializer):

@@ -22,3 +22,6 @@ class IsPortfolioOwnerOrEditorOrReadOnly(BasePermission):
             request.method in ("PUT", "PATCH")
             and request.user.groups.filter(name="Editor").exists()
         )
+
+    def has_object_permission(self, request, view, obj):
+        return self.has_permission(request, view)

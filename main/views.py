@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core import serializers
 from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -109,7 +110,11 @@ def show_projects(request):
 def show_experience(request):
     context = {
         "name": "Felisha Angeline",
-        "experience_list": Experience.objects.all(),
+        "title_query": request.GET.get("title", "").strip(),
+        "can_edit_experience": request.user.is_authenticated and (
+            request.user.is_superuser or request.user.groups.filter(name="Editor").exists()
+        ),
+        "experience_choices": Experience.EXPERIENCE_CHOICES,
     }
     return render(request, "experience.html", context)
 
@@ -153,6 +158,8 @@ def edit_skill(request, skill_id):
 
 @login_required(login_url="/login/")
 def create_experience(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
     form = ExperienceForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -168,6 +175,10 @@ def create_experience(request):
 
 @login_required(login_url="/login/")
 def edit_experience(request, experience_id):
+    if not request.user.is_authenticated or not (
+        request.user.is_superuser or request.user.groups.filter(name="Editor").exists()
+    ):
+        return HttpResponseForbidden()
     experience = get_object_or_404(Experience, pk=experience_id)
     form = ExperienceForm(request.POST or None, instance=experience)
 
@@ -185,6 +196,8 @@ def edit_experience(request, experience_id):
 
 @login_required(login_url="/login/")
 def delete_experience(request, experience_id):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
     experience = get_object_or_404(Experience, pk=experience_id)
     if request.method == "POST":
         experience.delete()

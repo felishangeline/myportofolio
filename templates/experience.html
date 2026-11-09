@@ -1,56 +1,115 @@
 {% extends 'base.html' %}
-{% block meta %}
-<title>Experience - {{ name }}</title>
-{% endblock meta %}
-
+{% load static %}
+{% block meta %}<title>Experience - {{ name }}</title>{% endblock meta %}
 {% block content %}
 <main>
-    <section class="experience-section" id="experience">
-        <div class="container">
-            <p class="section-kicker">What I did</p>
-
-            <div class="skills-header">
-                <h1>Experience</h1>
-                {% if user.is_superuser %}
-                    <a href="{% url 'main:create_experience' %}" class="button skills-add-button">
-                        <span aria-hidden="true">+</span> Tambah Experience
-                    </a>
-                {% endif %}
-            </div>
-
-            <form method="get" action="{% url 'main:show_experience' %}" class="skills-search">
-                <input type="search"
-                       name="title"
-                       value="{{ title_query }}"
-                       placeholder="Cari berdasarkan nama experience"
-                       class="skills-search__input"
-                       aria-label="Cari berdasarkan nama experience">
-                <button type="submit" class="button">Cari</button>
-            </form>
-
-            <div class="experience-grid skills-grid">
-                {% for experience in experience_list %}
-                    <article class="experience-card">
-                        <span class="experience-category">{{ experience.get_category_display }}</span>
-                        <h2>{{ experience.title }}</h2>
-                        <p class="experience-description">{{ experience.description }}</p>
-                        
-                        <div class="skills-actions" style="margin-top: auto;">
-                            {% if user.is_superuser %}
-                                {% include "components/experience_star.html" with experience=experience %}
-                                {% include "components/experience_delete_modal.html" with skills=skills %}
-                            {% endif %}
-                        </div>
-                    </article>
-                {% empty %}
-                    {% if title_query %}
-                        <p class="empty-state">No experience with that title</p>
-                    {% else %}
-                        <p class="empty-state">No experience added yet.</p>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-    </section>
+  <section class="experience-section" id="experience">
+    <div class="container">
+      <p class="section-kicker">What I did</p>
+      <div class="skills-header">
+        <h1>Experience</h1>
+        {% if user.is_superuser %}<button type="button" class="button skills-add-button" popovertarget="experience-create-modal"><span aria-hidden="true">+</span> Tambah Experience</button>{% endif %}
+      </div>
+      <form id="experience-search-form" class="skills-search">
+        <input type="search" id="experience-search" name="title" value="{{ title_query }}" placeholder="Cari berdasarkan nama experience" class="skills-search__input" aria-label="Cari berdasarkan nama experience">
+        <button type="submit" class="button">Cari</button>
+      </form>
+      <p id="experience-loading" class="empty-state">Memuat experiences...</p>
+      <p id="experience-error" class="empty-state hide" role="alert">Gagal memuat data experience. Silakan coba lagi.</p>
+      <p id="experience-empty" class="empty-state hide">Belum ada pengalaman yang ditambahkan atau ditemukan.</p>
+      <div id="experience-grid" class="experience-grid skills-grid hide"></div>
+    </div>
+  </section>
 </main>
+{% if user.is_authenticated %}<form id="csrf-source" hidden>{% csrf_token %}</form>{% endif %}
+{% if user.is_superuser %}
+<div id="experience-create-modal" popover="auto" class="skills-delete-modal">
+  <div class="skills-delete-modal__content">
+    <button type="button" class="button button-secondary" popovertarget="experience-create-modal" popovertargetaction="hide" aria-label="Tutup">Tutup</button>
+    <h2>Tambah Experience</h2>
+    <form id="experience-create-form" class="skills-form">
+      {% csrf_token %}
+      <label>Title <input name="title" maxlength="255" required></label>
+      <label>Description <textarea name="description" rows="3" required></textarea></label>
+      <label>Category <select name="category">{% for value,label in experience_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label>Thumbnail URL <input type="url" name="thumbnail"></label>
+      <label>End date <input type="datetime-local" name="ended_at"></label>
+      <button type="submit" class="button">Tambah Experience</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% include "components/toast.html" %}
+<script>
+const EXPERIENCE_API = "{% url 'api:experience-list' %}";
+const EXPERIENCE_DETAIL_TEMPLATE = "{% url 'api:experience-detail' '00000000-0000-0000-0000-000000000000' %}";
+const EXPERIENCE_STAR_TEMPLATE = "{% url 'api:experience-star' '00000000-0000-0000-0000-000000000000' %}";
+const CAN_EDIT_EXPERIENCE = {{ can_edit_experience|yesno:'true,false' }};
+const IS_OWNER = {{ user.is_superuser|yesno:'true,false' }};
+const IS_AUTHENTICATED = {{ user.is_authenticated|yesno:'true,false' }};
+const csrfToken = document.querySelector('#csrf-source [name=csrfmiddlewaretoken]')?.value || document.querySelector('#experience-create-form [name=csrfmiddlewaretoken]')?.value;
+const grid = document.getElementById('experience-grid');
+const searchInput = document.getElementById('experience-search');
+let searchTimer;
+
+function esc(value) { return (value ?? '').toString().replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch])); }
+function endpoint(template, id) { return template.replace('00000000-0000-0000-0000-000000000000', id); }
+function showState(name) {
+  ['loading','error','empty'].forEach(key => document.getElementById(`experience-${key}`).classList.toggle('hide', name !== key));
+  grid.classList.toggle('hide', name !== 'grid');
+}
+function card(item) {
+  const article = document.createElement('article'); article.className = 'experience-card';
+  const categories = {internship:'Internship',research:'Research',volunteer:'Volunteer','part-time':'Part-Time','full-time':'Full-Time',freelance:'Freelance'};
+  let edit = '';
+  if (CAN_EDIT_EXPERIENCE) edit = `<form class="experience-edit-form skills-form" hidden>
+    <label>Title <input name="title" maxlength="255" value="${esc(item.title)}" required></label>
+    <label>Description <textarea name="description" rows="3" required>${esc(item.description)}</textarea></label>
+    <label>Category <select name="category">${Object.entries(categories).map(([v,l])=>`<option value="${v}" ${v===item.category?'selected':''}>${l}</option>`).join('')}</select></label>
+    <label>Thumbnail URL <input type="url" name="thumbnail" value="${esc(item.thumbnail || '')}"></label>
+    <label>End date <input type="datetime-local" name="ended_at" value="${item.ended_at ? esc(item.ended_at.slice(0,16)) : ''}"></label>
+    <button class="button" type="submit">Simpan</button><button class="button button-secondary cancel-edit" type="button">Batal</button>
+  </form>`;
+  article.innerHTML = `<div class="experience-card-content"><span class="experience-category">${esc(categories[item.category] || item.category)}</span><h2>${esc(item.title)}</h2><p class="experience-description">${esc(item.description)}</p><p class="experience-status">${item.is_ongoing ? 'Sedang berlangsung' : 'Selesai'}</p></div>
+    <div class="skills-actions"><button class="button button-star${item.is_starred?' is-starred':''}" data-action="star" title="${!IS_AUTHENTICATED?'Login untuk memberi star':item.star_count ? `${item.star_count} star` : 'Beri star'}">★ ${item.is_starred?'Unstar':'Star'} <span class="star-count">${item.star_count}</span></button>
+    ${CAN_EDIT_EXPERIENCE?'<button type="button" class="button" data-action="edit">Edit</button>':''}${IS_OWNER?'<button type="button" class="button button-danger" data-action="delete">Hapus</button>':''}</div>${edit}`;
+  article.querySelector('[data-action="star"]').addEventListener('click', async () => {
+    if (!IS_AUTHENTICATED) { showToast('Perlu login', 'Login untuk memberi atau membatalkan star.', 'error'); return; }
+    await mutate(endpoint(EXPERIENCE_STAR_TEMPLATE,item.id), 'POST', null);
+  });
+  article.querySelector('[data-action="edit"]')?.addEventListener('click', () => { article.querySelector('.experience-edit-form').hidden = false; });
+  article.querySelector('.cancel-edit')?.addEventListener('click', () => { article.querySelector('.experience-edit-form').hidden = true; });
+  article.querySelector('.experience-edit-form')?.addEventListener('submit', async e => { e.preventDefault(); await mutate(endpoint(EXPERIENCE_DETAIL_TEMPLATE,item.id),'PATCH',experiencePayload(e.currentTarget)); });
+  article.querySelector('[data-action="delete"]')?.addEventListener('click', async () => { if (confirm(`Hapus experience “${item.title}”?`)) await mutate(endpoint(EXPERIENCE_DETAIL_TEMPLATE,item.id),'DELETE',null); });
+  return article;
+}
+async function loadExperiences() {
+  showState('loading');
+  try {
+    const url = new URL(EXPERIENCE_API, window.location.href); if (searchInput.value.trim()) url.searchParams.set('title',searchInput.value.trim());
+    const response = await fetch(url,{headers:{Accept:'application/json'}}); if (!response.ok) throw new Error(await response.text());
+    const data = await response.json(); grid.replaceChildren(...data.map(card)); showState(data.length?'grid':'empty');
+  } catch (error) { console.error(error); showState('error'); }
+}
+async function mutate(url, method, body) {
+  try {
+    const headers = {'Accept':'application/json','X-CSRFToken':csrfToken};
+    if (body) headers['Content-Type']='application/json';
+    const response = await fetch(url,{method,headers,body:body?JSON.stringify(body):undefined});
+    if (!response.ok) { let detail='Permintaan ditolak.'; try { const data=await response.json(); detail=Object.values(data).flat().join(' '); } catch {} showToast('Gagal',detail,'error'); return; }
+    showToast('Berhasil','Data experience berhasil diperbarui.','success');
+    document.getElementById('experience-create-modal')?.hidePopover();
+    await loadExperiences();
+  } catch(error) { console.error(error); showToast('Gagal','Tidak dapat menghubungi API.','error'); }
+}
+function experiencePayload(form) {
+  const payload = Object.fromEntries(new FormData(form));
+  if (payload.ended_at === '') payload.ended_at = null;
+  return payload;
+}
+document.getElementById('experience-search-form').addEventListener('submit',e=>{e.preventDefault();clearTimeout(searchTimer);loadExperiences();});
+searchInput.addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(loadExperiences,300);});
+document.getElementById('experience-create-form')?.addEventListener('submit',e=>{e.preventDefault();mutate(EXPERIENCE_API,'POST',experiencePayload(e.currentTarget));});
+loadExperiences();
+</script>
 {% endblock content %}
