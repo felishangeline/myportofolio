@@ -62,7 +62,6 @@ def experience_star(request, experience_id):
 
 
 @api_view(["GET", "HEAD", "POST"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrReadOnly])
 def project_list(request):
     if request.method in ("GET", "HEAD"):
@@ -81,7 +80,6 @@ def project_list(request):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrReadOnly])
 def project_detail(request, project_id):
     project = get_object_or_404(
@@ -114,4 +112,12 @@ def project_star(request, project_id):
         project.starred_by.add(request.user)
     serializer = ProjectSerializer(project, context={"request": request})
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_logout(request):
+    if request.auth is not None:
+        request.auth.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 

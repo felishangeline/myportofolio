@@ -20,8 +20,6 @@ load_dotenv()
 # gunakan https:// untuk trailing urlnya
 CSRF_TRUSTED_ORIGINS = ["https://felisha-angeline-myportofolio.pws.cs.ui.ac.id"]
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "felisha-angeline-myportofolio.pws.cs.ui.ac.id"]
-
 PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,7 +35,12 @@ SECRET_KEY = 'django-insecure-4_u(@$un6i=n0nvg=outwlu!pe-r9@p_n19q!llu39f)7(c2f$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "10.0.2.2",
+    "felisha-angeline-myportofolio.pws.cs.ui.ac.id",
+]
 
 
 # Application definition
@@ -51,12 +54,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     "rest_framework",
+    "rest_framework.authtoken",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -164,3 +170,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+}
+
+CORS_ALLOW_ALL_ORIGINS = not PRODUCTION
+if PRODUCTION:
+    CORS_ALLOWED_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
